@@ -1,0 +1,320 @@
+<!--
+    http://jsxgraph.uni-bayreuth.de/wiki/index.php?title=Documentation
+    http://jsxgraph.uni-bayreuth.de/wiki/index.php?title=Bounding_box
+-->
+
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="jsxgraph.css"
+/>
+<style>
+  .temp {
+    border: 5px solid red;
+
+  }
+</style>
+<script
+  type="text/javascript"  
+  src="jsxgraphcore.js"
+
+></script>
+<div id="jxgbox" class="jxgbox" style="width:1000px; height:618px;"></div>
+<div id="myinfobox" 
+    style="
+        z-Index:99; 
+        display:none;
+        position:absolute; 
+        left:0px;
+        top:0px;
+        width:50px;
+        background-color:#ffff88;
+        padding:5px;
+        text-align:center;
+        /* Cross-browser opacity:*/
+        -ms-filter:'progid:DXImageTransform.Microsoft.Alpha(Opacity=70)'; 
+        filter: alpha(opacity=70);
+        opacity:.7;
+    "
+></div>
+<script type="text/javascript">
+  
+  const log =(m,n)=>console.log(m,n);
+
+  const Config = {
+    FPS:60,
+    Structure: {
+      visible: false
+    }
+  }
+  
+  const scale = 0.89;
+
+  var b = JXG.JSXGraph.initBoard('jxgbox', {
+    renderer: 'canvas',    
+    boundingbox: [-2/scale, 57/scale, 100/scale, -7/scale],
+    axis: false,
+    showNavigation:false,
+    showCopyright:false,
+    showFullscreen: false
+  })
+  b = b.dehighlightAll();
+
+  var ropeDiff = 0;
+  var coords = b.create('point', [10, 40], { name: 'Coords', size: 2, visible: false})
+  
+
+  //axis
+  const axisX = b.create('line', [[0,0], [40, 0]],{visible:Config.Structure.visible, fixed:true})
+  const axisY = b.create('line', [[0,0], [0,40]],{visible:Config.Structure.visible, fixed:true})
+
+  // initial config
+  const _pulley = {
+    x: 32,
+    y: 40,
+    actionHeight:12,
+    radio:3
+  }
+  const _rope = {
+    length: 65
+  }
+
+  // pulley
+  var _p4 = b.create('point', [_pulley.x, _pulley.y+_pulley.actionHeight], { name: 'p_4', size: 2, fixed: true, visible:Config.Structure.visible })
+  var _p5 = b.create('point', [_pulley.x, _pulley.y], { name: 'p_5', size: 2, fixed: true, visible:Config.Structure.visible })
+  var _pS2 = b.create('segment', [_p5, _p4],{visible:Config.Structure.visible})
+
+
+  var _p1 = b.create('point', [20, 48], { name: 'p_1', size: 2, fixed: true, visible:Config.Structure.visible })
+  var _p2 = b.create('point', [20, 45], { name: 'p_2', size: 2, fixed: true, visible:Config.Structure.visible })
+  var _p3 = b.create('glider', [_pS2], { withLabel: false, name: 'p_3', size: 2})
+  var _pS1 = b.create('segment', [_p1, _p2],{visible:Config.Structure.visible})
+  //var _gP_1 = b.create('glider', [_pS1], { name: '_gP_1' })
+  
+  var _cPull = b.create('circle', [_p3, _pulley.radio], {visible:Config.Structure.visible})
+  var g3 = b.create('parallel', [_p3, axisY], {visible:Config.Structure.visible});
+  var _rI3 = b.create('intersection', [g3, _cPull], {visible:Config.Structure.visible})
+  
+
+  var _cPull2 = b.create('circle', [_p3, 1], {visible:Config.Structure.visible})
+  var _rI4 = b.create('intersection', [g3, _cPull2], {visible:Config.Structure.visible})
+
+
+  // pulley
+  var _pS4 = b.create('segment', [_rI3, _rI4],{visible:Config.Structure.visible})
+  var _p6 = b.create('glider', [_pS4], { withLabel: false, size: 2})
+  var pulley = b.create('circle', [_p3, _p6], {fillColor:'#FFFCD2'})
+
+  // donkey
+  var _d1 = b.create('point', [60, 29], { name: '_d1', size: 2, fixed: true, visible:Config.Structure.visible })
+  var _d2 = b.create('point', [80, 29], { name: '_d2', size: 2, fixed: true, visible:Config.Structure.visible })  
+  var _dS1 = b.create('segment', [_d1, _d2],{visible:Config.Structure.visible})
+  var _gD_1 = b.create('glider', [_dS1], { withLabel: false, highlight:false })
+  
+  // donkey floor
+  const dF0 = b.create('circle', [_d2, 5.5],{visible:Config.Structure.visible})
+  const dF1 = b.create('perpendicular', [_dS1, _d2],{visible:Config.Structure.visible})
+  const dF3 = b.create('intersection', [dF0, dF1],{visible:Config.Structure.visible})
+  const dF4 = b.create('parallel', [_dS1, dF3],{visible:Config.Structure.visible})
+  const dF5 = b.create('parallel', [[29.7,0], axisY], {visible:Config.Structure.visible});
+  const dF6 = b.create('parallel', [[90.53,0], axisY], {visible:Config.Structure.visible});
+  const dF7 = b.create('intersection', [dF4, dF5],{visible:Config.Structure.visible})
+  const dF8 = b.create('intersection', [dF4, dF6],{visible:Config.Structure.visible})
+  const donkeyFloor = b.create('segment', [dF7, dF8],{color:'green'})
+
+
+  //rope
+  var _rC1 = b.create('circle', [_gD_1, _p3], {visible:Config.Structure.visible})
+  var _rI1 = b.create('intersection', [_rC1, pulley], {visible:Config.Structure.visible})
+  var rope = b.create('segment', [_gD_1, _rI1])
+
+
+
+  var g = b.create('parallel', [_p3, axisX], {visible:Config.Structure.visible});
+  var _rI2 = b.create('intersection', [g, pulley], {visible:Config.Structure.visible})
+
+  var g2 = b.create('parallel', [_rI2, axisY], {visible:Config.Structure.visible});
+
+
+  var arc = b.create('arc', [_p3, _rI1, _rI2], {strokeColor: 'green'});
+  var label = b.create('text',[10,10,()=>{
+    const ropeLength = _rope.length;
+    var partRopeLenght = arc.Value()+rope.L();
+    ropeDiff = ropeLength - partRopeLenght;
+    return `${ropeDiff} / ${partRopeLenght}`;
+  }],{visible:Config.Structure.visible});
+
+
+
+     
+  var _rC2 = b.create('circle', [_rI2, ()=>ropeDiff], {visible:Config.Structure.visible})
+  var _CubePoint = b.create('intersection', [g2, _rC2], {visible:Config.Structure.visible})
+  var rope2 = b.create('segment', [_CubePoint, _rI2])
+
+  const cubeSize = 10;
+  var p1 = b.create('point', [()=>_CubePoint.X()+cubeSize/2,()=>_CubePoint.Y()], {visible:Config.Structure.visible}),
+    p2 = b.create('point', [()=>_CubePoint.X()-cubeSize/2,()=>_CubePoint.Y()-cubeSize], {name:'A', visible:Config.Structure.visible}),
+    p3 = b.create('point', [()=>p1.X(),()=>p2.Y()], {color:'blue', name:'B', visible:Config.Structure.visible}),
+    p4 = b.create('point', [()=>p2.X(),()=>p1.Y()], {color:'blue', name:'C', visible:Config.Structure.visible});
+
+  const rect = b.create('polygon',[p1,p3,p2,p4],{hasInnerPoints:false, visible:Config.Structure.visible});
+    
+
+
+// pulley rotation
+const BB = b.create('point', [80,40], {name:'BB',color:'green', visible:Config.Structure.visible});
+const inter= b.create('intersection', [_cPull, g, 1], {name:'AA',color:'green',visible:Config.Structure.visible});
+const angle = b.create('angle', [ inter,_p3, BB], {visible:Config.Structure.visible});
+const SAA = b.create('segment', [ _d1,_gD_1], {color:'green', visible:Config.Structure.visible});
+const LAA = b.create('line', [_p3, BB], {visible:Config.Structure.visible});
+const LAB = b.create('perpendicular', [_p3, LAA], {visible:Config.Structure.visible});
+
+const IAA= b.create('intersection', [LAB, pulley, 0], {name:'',color:'green',visible:Config.Structure.visible});
+const IAB= b.create('intersection', [LAB, pulley, 1], {name:'',color:'green',visible:Config.Structure.visible});
+const IAC= b.create('intersection', [LAA, pulley, 1], {name:'',color:'green',visible:Config.Structure.visible});
+const IAD= b.create('intersection', [LAA, pulley, 0], {name:'',color:'green',visible:Config.Structure.visible});
+
+const SAB = b.create('segment', [ IAA,IAB]);
+const SAC = b.create('segment', [ IAC,IAD]);
+
+
+
+const background = b.create('image', ['assets/background.png', [10,26], [92.4, 31.9]], {fillOpacity:0.6,fixed:true} )
+const well = b.create('image', ['assets/well.png', [21,-17], [9, 45]], {fixed:true} )
+const post = b.create('image', ['assets/post.svg', [()=>_p3.X()-9.5,()=>_p3.Y() - 37], [10.5, 45.9]], {fixed:false} )
+const face_well = b.create('image', ['assets/face-well.svg', [20.5,-17.5], [4.25, 40]], {fixed:true} )
+const bucket = b.create('image', ['assets/bucket.svg', [()=>_CubePoint.X()-3,()=>_CubePoint.Y()-8], [6, 9]], {fixed:false, layer:10} )
+const front_hook = b.create('image', ['assets/front-hook.svg', [()=>_p3.X()-0.75,()=>_p3.Y()-0.65], [1.75, 4.75]], {fixed:false, layer:10} )
+
+
+class JSXSprite {
+  constructor(board, paths, options ){
+    // Jsxgraph has a bug with the first render for the images
+    this.x = -100;
+    this.y = -100;
+    this.moving = false;
+    this.options = options;
+    this.currentImageIndex = 0;
+    this.board;
+    this.paths = paths;
+    this.images = this.load(paths);
+    this.init();
+  }
+  load(images){    
+    let list = [];
+    images.forEach(img => {
+      list.push(b.create('image', [img, [()=>this.x, ()=>this.y], [this.options.width, this.options.height]] ));
+    });    
+    return list;
+  }  
+  init(){
+    // Jsxgraph has a bug with the first render for the images    
+    this.initialImage = b.create('image', [this.paths[0], [this.options.x(), this.options.y()], [this.options.width, this.options.height]], {fixed:true} )    
+    this.images[0].setAttribute({
+        visible:true
+      });
+    this.animation();
+  }
+  animation(){
+    this.step();
+    let dt = 0;
+    this.hide();    
+    setInterval(()=>{      
+      this.step(dt);
+      dt++;
+    }, 1000 / Config.FPS );
+  }
+  step( dt ){    
+    if(this.moving){
+      if( dt % this.options.fps == 0 ){
+        this.hide();        
+        const len = this.images.length;
+        this.currentImageIndex = this.currentImageIndex >= len  ? 0:this.currentImageIndex;      
+        this.images[this.currentImageIndex++].setAttribute({
+          visible:true
+        });
+        this.initialImage.setAttribute({
+          visible:false
+        });
+      }      
+      this.x = this.options.x();
+      this.y = this.options.y();
+    }
+  }
+
+  hide(){
+    
+    this.images.forEach(img => {      
+      img.setAttribute({
+        visible:false
+      });
+    });
+  }
+  start(){
+    this.moving = true;
+  }
+  stop(){
+    this.moving = false;
+  }
+}
+
+const donkey = new JSXSprite(b,[
+  'assets/donkey-01.png',
+  'assets/donkey-02.png',
+  'assets/donkey-03.png',
+  'assets/donkey-04.png',
+  'assets/donkey-05.png',
+],{
+  x:()=>_gD_1.X()-7,
+  y:()=>_gD_1.Y()-11.25/2,
+  width:15,
+  height:11.25,
+  fps:8
+});
+
+_gD_1.on('drag',()=>{
+  donkey.start();
+})
+
+_gD_1.on('up',()=>{
+  donkey.stop();
+})
+
+
+
+
+
+
+angle.setAngle(()=>{
+  const speed = SAB.L();
+  return -2*Math.PI*SAA.L()/(speed*_pS1.L());
+});
+b.update();
+
+
+// First, we overwrite the highling method for ALL lines
+var infobox = document.getElementById('myinfobox');
+JXG.Line.prototype.highlight = function(){
+    infobox.innerHTML = this.board.mousePosRel.toString()+'<hr noshade>'+this.name;
+    infobox.style.left = (this.board.mousePosRel[0]+0)+'px';
+    infobox.style.top =  (this.board.mousePosRel[1]+0)+'px';
+    infobox.style.display = 'block';
+    this.board.renderer.highlight(this); // highlight the line
+
+}
+JXG.Line.prototype.noHighlight = function(){
+    infobox.style.display = 'none';
+    this.board.renderer.noHighlight(this); // dehighlight the line
+}
+
+//Second, we overwrite the highlighting method just for the circle c.
+pulley.highlight = function(){
+    infobox.innerHTML = this.board.mousePosRel.toString();
+    infobox.style.left = (this.board.mousePosRel[0]+0)+'px';
+    infobox.style.top =  (this.board.mousePosRel[1]+0)+'px';
+    infobox.style.display = 'block';
+}
+pulley.noHighlight = function(){
+    infobox.style.display = 'none';
+}
+</script>
